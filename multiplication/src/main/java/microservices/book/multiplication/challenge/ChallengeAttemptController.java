@@ -1,25 +1,21 @@
 package microservices.book.multiplication.challenge;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
-/*
-*   This class provides a REST API to POST attempts from users.
-* */
+/**
+ * This class provides a REST API to POST the attempts from users.
+ */
 @Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/attempts")
-public class ChallengeAttemptController {
+class ChallengeAttemptController {
 
     private final ChallengeService challengeService;
 
@@ -29,4 +25,10 @@ public class ChallengeAttemptController {
         return ResponseEntity.ok(challengeService.verifyAttempt(challengeAttemptDTO));
     }
 
+    @GetMapping
+    ResponseEntity<List<ChallengeAttempt>> getStatistics(@RequestParam("alias") String alias) {
+        return ResponseEntity.ok(
+                challengeService.getStatsForUser(alias)
+        );
+    }
 }

@@ -1,5 +1,6 @@
 package microservices.book.multiplication.challenge;
 
+import microservices.book.multiplication.serviceclients.GamificationServiceClient;
 import microservices.book.multiplication.user.User;
 import microservices.book.multiplication.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class ChallengeServiceTest {
 
     private ChallengeService challengeService;
@@ -30,20 +28,23 @@ public class ChallengeServiceTest {
     private UserRepository userRepository;
     @Mock
     private ChallengeAttemptRepository attemptRepository;
+    @Mock
+    private GamificationServiceClient gameClient;
 
     @BeforeEach
     public void setUp() {
         challengeService = new ChallengeServiceImpl(
                 userRepository,
-                attemptRepository
+                attemptRepository,
+                gameClient
         );
-        given(attemptRepository.save(any()))
-                .will(returnsFirstArg());
     }
 
     @Test
     public void checkCorrectAttemptTest() {
         // given
+        given(attemptRepository.save(any()))
+                .will(returnsFirstArg());
         ChallengeAttemptDTO attemptDTO =
                 new ChallengeAttemptDTO(50, 60, "john_doe", 3000);
 
@@ -53,14 +54,16 @@ public class ChallengeServiceTest {
 
         // then
         then(resultAttempt.isCorrect()).isTrue();
-        // newly added lines
         verify(userRepository).save(new User("john_doe"));
         verify(attemptRepository).save(resultAttempt);
+        verify(gameClient).sendAttempt(resultAttempt);
     }
 
     @Test
     public void checkWrongAttemptTest() {
         // given
+        given(attemptRepository.save(any()))
+                .will(returnsFirstArg());
         ChallengeAttemptDTO attemptDTO =
                 new ChallengeAttemptDTO(50, 60, "john_doe", 5000);
 
@@ -70,11 +73,16 @@ public class ChallengeServiceTest {
 
         // then
         then(resultAttempt.isCorrect()).isFalse();
+        verify(userRepository).save(new User("john_doe"));
+        verify(attemptRepository).save(resultAttempt);
+        verify(gameClient).sendAttempt(resultAttempt);
     }
 
     @Test
     public void checkExistingUserTest() {
         // given
+        given(attemptRepository.save(any()))
+                .will(returnsFirstArg());
         User existingUser = new User(1L, "john_doe");
         given(userRepository.findByAlias("john_doe"))
                 .willReturn(Optional.of(existingUser));
@@ -90,6 +98,7 @@ public class ChallengeServiceTest {
         then(resultAttempt.getUser()).isEqualTo(existingUser);
         verify(userRepository, never()).save(any());
         verify(attemptRepository).save(resultAttempt);
+        verify(gameClient).sendAttempt(resultAttempt);
     }
 
     @Test

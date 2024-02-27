@@ -5,6 +5,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/multiplication/pom.xml" />
+        <option value="$PROJECT_DIR$/gamification/gamification/pom.xml" />
+        <option value="$PROJECT_DIR$/gamification/pom.xml" />
       </list>
     </option>
     <option name="workspaceImportForciblyTurnedOn" value="true" />
